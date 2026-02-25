@@ -3,7 +3,7 @@ import { getQuestions, LANGUAGES, type Language } from './data/questions'
 import { getDialogStrings } from './data/dialogTranslations'
 import { SpinningWheel } from './components/SpinningWheel'
 
-const LOGO_URL = '/bisk-logo.png'
+const LOGO_URL = 'https://bisk.edu.krd/wp-content/uploads/elementor/thumbs/cropped-BISK-BADGE-1-qqobsotbetcmcnpcklkbc1oqzcj08mperrvsjr036o.png'
 const ANSWER_DISPLAY_SECONDS = 6
 
 function App() {
