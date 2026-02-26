@@ -2,9 +2,14 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { getQuestions, LANGUAGES, type Language } from './data/questions'
 import { getDialogStrings } from './data/dialogTranslations'
 import { SpinningWheel } from './components/SpinningWheel'
+import biskLogoUrl from './assets/bisk-logo.png'
 
-const LOGO_URL = 'https://bisk.edu.krd/wp-content/uploads/elementor/thumbs/cropped-BISK-BADGE-1-qqobsotbetcmcnpcklkbc1oqzcj08mperrvsjr036o.png'
+// Localhost: imported asset (Vite resolves base path). Hosted: BISK URL.
+const LOGO_URL = import.meta.env.DEV
+  ? biskLogoUrl
+  : 'https://bisk.edu.krd/wp-content/uploads/elementor/thumbs/cropped-BISK-BADGE-1-qqobsotbetcmcnpcklkbc1oqzcj08mperrvsjr036o.png'
 const ANSWER_DISPLAY_SECONDS = 6
+const QUESTION_COUNTDOWN_SECONDS = 30
 
 function App() {
   const [language, setLanguage] = useState<Language>('en')
@@ -14,6 +19,7 @@ function App() {
   const [usedNumbers, setUsedNumbers] = useState<Set<number>>(() => new Set())
   const [showingAnswer, setShowingAnswer] = useState(false)
   const [answerCountdown, setAnswerCountdown] = useState(ANSWER_DISPLAY_SECONDS)
+  const [questionCountdown, setQuestionCountdown] = useState(QUESTION_COUNTDOWN_SECONDS)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   const questions = useMemo(() => getQuestions(language), [language])
@@ -68,6 +74,16 @@ function App() {
       const t = setTimeout(() => closeButtonRef.current?.focus(), 50)
       return () => clearTimeout(t)
     }
+  }, [selectedNumber, showingAnswer])
+
+  // When question modal opens: 30s countdown (visual only, does not auto-close)
+  useEffect(() => {
+    if (selectedNumber == null || showingAnswer) return
+    setQuestionCountdown(QUESTION_COUNTDOWN_SECONDS)
+    const interval = setInterval(() => {
+      setQuestionCountdown((c) => (c <= 0 ? 0 : c - 1))
+    }, 1000)
+    return () => clearInterval(interval)
   }, [selectedNumber, showingAnswer])
 
   // When showing answer: countdown display + close after 6s
@@ -334,6 +350,23 @@ function App() {
                 </>
               ) : (
                 <>
+                  {/* 30-second countdown (visual only, does not auto-close) */}
+                  <div
+                    className="flex items-center justify-center gap-3 mb-6 py-4 px-5 rounded-2xl bg-black/10 border-2 border-islamic-accent/40"
+                    aria-live="polite"
+                    aria-label={`${questionCountdown} seconds remaining`}
+                  >
+                    <span className="text-sm font-medium text-islamic-muted uppercase tracking-wide">
+                      Time
+                    </span>
+                    <span className="font-heading text-4xl sm:text-5xl font-bold tabular-nums text-islamic-accent min-w-[1.2em] text-center">
+                      {questionCountdown}
+                    </span>
+                    <span className="text-sm font-medium text-islamic-muted">
+                      {questionCountdown === 1 ? dialogT.second : dialogT.seconds}
+                    </span>
+                  </div>
+
                   <h2
                     id="question-title"
                     className="font-sans m-0 mb-8 text-xl sm:text-2xl leading-relaxed font-semibold text-islamic-text-on-light"
